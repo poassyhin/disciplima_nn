@@ -1,32 +1,38 @@
 import csv
 import math
+from io import StringIO
+from math import log2
 
-def calculate_probabilities(matrix):
-    probabilities = []
-    num_elements = len(matrix)
+def parse_csv_matrix(csv_string):
+    matrix = []
+    f = StringIO(csv_string)
+    reader = csv.reader(f, delimiter=',')
+    for row in reader:
+        matrix.append([int(x) for x in row])
+    return matrix
+
+def calculate_entropy(matrix):
+    total_values = sum(sum(row) for row in matrix)
+    if total_values == 0:
+        return 0.0
+
+    res = 0.0
     for row in matrix:
-        row_probabilities = [elem / (num_elements - 1) for elem in row]
-        probabilities.append(row_probabilities)
-    return probabilities
+        for value in row:
+            if value > 0:
+                res -= int(value) / (len(matrix) - 1) *  log2(int(value) / (len(matrix) - 1))
+    return round(res, 1)
 
-def entropy_of_row(row):
-    return sum([-p * math.log2(p) for p in row if p > 0])
+def task(csv_string):
+    matrix = parse_csv_matrix(csv_string)
+    return calculate_entropy(matrix)
 
-def total_entropy(matrix):
-    probability_matrix = calculate_probabilities(matrix)
-    return sum(entropy_of_row(row) for row in probability_matrix)
-
-def main():
-    relation_matrix = [
-        [2,0,2,0,0],
-        [0,1,0,0,1],
-        [2,1,0,0,1],
-        [0,1,0,1,1],
-        [0,1,0,1,1],
-
-    ]
-    entropy = total_entropy(relation_matrix)
-    print(f"Total Entropy: {entropy}")
-
-if __name__ == "__main__":
-    main()
+# Example usage
+csv_str = '''1,0,2,0,0
+2,1,2,0,0
+2,1,0,1,0
+0,1,0,1,0
+0,1,0,1,0
+0,1,0,1,0'''
+result = task(csv_str)
+print(result)
